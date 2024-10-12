@@ -15,6 +15,19 @@ from utils import CvFpsCalc
 from model import KeyPointClassifier
 from model import PointHistoryClassifier
 
+import requests
+import json
+
+
+def send_data(result):
+    url = "http://127.0.0.1:5000/upload"
+
+    with open('template.json', 'r') as file:
+        template_data = json.load(file)
+        template_data["hand"] = result
+
+    requests.post(url=url, json=template_data)
+
 
 def get_args():
     parser = argparse.ArgumentParser()
@@ -170,6 +183,7 @@ def main():
                     keypoint_classifier_labels[hand_sign_id],
                     point_history_classifier_labels[most_common_fg_id[0][0]],
                 )
+                send_data(keypoint_classifier_labels[hand_sign_id])
         else:
             point_history.append([0, 0])
 
