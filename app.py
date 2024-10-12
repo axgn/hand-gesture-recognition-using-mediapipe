@@ -34,7 +34,10 @@ def send_data():
             template_data["hand"] = recognition_result
             lock.release()
 
-        requests.post(url=url, json=template_data)
+        try:
+            requests.post(url=url, json=template_data)
+        except Exception as e:
+            print(e)
 
 
 def get_args():
@@ -207,9 +210,10 @@ def main():
         # 画面反映 #############################################################
         cv.imshow('Hand Gesture Recognition', debug_image)
 
-    send_data_t.join()
     cap.release()
     cv.destroyAllWindows()
+    send_data_t.join() #没有join整个进程无法使用ctrl + c暂停，同时主线程一停止，子线程无主未停止的情况
+
 
 
 def select_mode(key, mode):
