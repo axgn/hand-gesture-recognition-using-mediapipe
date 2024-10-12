@@ -20,6 +20,7 @@ import json
 import threading
 
 recognition_result = ""
+stop_flag = False
 lock = threading.Lock()
 
 def send_data():
@@ -28,6 +29,8 @@ def send_data():
     url = "http://127.0.0.1:5000/upload"
 
     while True:
+        if stop_flag:
+            break
         with open('template.json', 'r') as file:
             template_data = json.load(file)
             lock.acquire()
@@ -212,6 +215,8 @@ def main():
 
     cap.release()
     cv.destroyAllWindows()
+    global stop_flag
+    stop_flag = True
     send_data_t.join() #没有join整个进程无法使用ctrl + c暂停，同时主线程一停止，子线程无主未停止的情况
 
 
