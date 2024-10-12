@@ -20,6 +20,7 @@ import json
 import threading
 
 recognition_result = ""
+lock = threading.Lock()
 
 def send_data():
     global recognition_result
@@ -29,7 +30,9 @@ def send_data():
     while True:
         with open('template.json', 'r') as file:
             template_data = json.load(file)
+            lock.acquire()
             template_data["hand"] = recognition_result
+            lock.release()
 
         requests.post(url=url, json=template_data)
 
@@ -192,7 +195,9 @@ def main():
                     point_history_classifier_labels[most_common_fg_id[0][0]],
                 )
                 global recognition_result
+                lock.acquire()
                 recognition_result = keypoint_classifier_labels[hand_sign_id]
+                lock.release()
         else:
             point_history.append([0, 0])
 
