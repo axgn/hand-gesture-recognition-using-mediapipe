@@ -42,7 +42,7 @@ def main():
     # 引数解析 #################################################################
     args = get_args()
 
-    cap_device = args.device
+    cap_device = 'http://192.168.3.158/'
     cap_width = args.width
     cap_height = args.height
 
