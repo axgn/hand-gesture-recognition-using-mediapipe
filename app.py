@@ -17,16 +17,21 @@ from model import PointHistoryClassifier
 
 import requests
 import json
+import threading
 
+recognition_result = ""
 
-def send_data(result):
+def send_data():
+    global recognition_result
+    
     url = "http://127.0.0.1:5000/upload"
 
-    with open('template.json', 'r') as file:
-        template_data = json.load(file)
-        template_data["hand"] = result
+    while True:
+        with open('template.json', 'r') as file:
+            template_data = json.load(file)
+            template_data["hand"] = recognition_result
 
-    requests.post(url=url, json=template_data)
+        requests.post(url=url, json=template_data)
 
 
 def get_args():
@@ -113,6 +118,9 @@ def main():
 
     #  ########################################################################
     mode = 0
+    
+    send_data_t = threading.Thread(target=send_data)
+    send_data_t.start()
 
     while True:
         fps = cvFpsCalc.get()
@@ -183,7 +191,8 @@ def main():
                     keypoint_classifier_labels[hand_sign_id],
                     point_history_classifier_labels[most_common_fg_id[0][0]],
                 )
-                send_data(keypoint_classifier_labels[hand_sign_id])
+                global recognition_result
+                recognition_result = keypoint_classifier_labels[hand_sign_id]
         else:
             point_history.append([0, 0])
 
@@ -193,6 +202,7 @@ def main():
         # 画面反映 #############################################################
         cv.imshow('Hand Gesture Recognition', debug_image)
 
+    send_data_t.join()
     cap.release()
     cv.destroyAllWindows()
 
