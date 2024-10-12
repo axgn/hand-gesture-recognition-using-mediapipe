@@ -1,0 +1,5 @@
+{
+    "from" : "hand_gesture_recognition",
+    "type" : "str",
+    "hand" : ""
+}

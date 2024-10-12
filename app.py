@@ -42,7 +42,10 @@ def main():
     # 引数解析 #################################################################
     args = get_args()
 
-    cap_device = 'http://192.168.3.158/'
+    if args.device == 1:
+        cap_device = 'http://192.168.3.158/'
+    else:
+        cap_device = args.device
     cap_width = args.width
     cap_height = args.height
 
@@ -126,10 +129,9 @@ def main():
             for hand_landmarks, handedness in zip(results.multi_hand_landmarks,
                                                   results.multi_handedness):
                 # 外接矩形の計算
-                brect = calc_bounding_rect(debug_image, hand_landmarks)
+                brect = calc_bounding_rect(debug_image, hand_landmarks) #边框坐标
                 # ランドマークの計算
-                landmark_list = calc_landmark_list(debug_image, hand_landmarks)
-
+                landmark_list = calc_landmark_list(debug_image, hand_landmarks) #手指关键点坐标
                 # 相対座標・正規化座標への変換
                 pre_processed_landmark_list = pre_process_landmark(
                     landmark_list)
