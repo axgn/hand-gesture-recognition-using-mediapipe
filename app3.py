@@ -8,7 +8,7 @@ def upload_json():
     if request.is_json:
         data = request.get_json()
         print(f'Received JSON data: {data}')
-        return jsonify({'status': 'success', 'data': data}), 200
+        return jsonify(),200
     else:
         return jsonify({'status': 'error', 'message': 'Request must be JSON'}), 400
 

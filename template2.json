@@ -1,4 +1,5 @@
 {
     "from": "hand_gesture_recognition",
-    "type": "register"
+    "type": "input",
+    "data": ""
 }

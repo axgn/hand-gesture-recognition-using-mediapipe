@@ -15,30 +15,39 @@ from utils import CvFpsCalc
 from model import KeyPointClassifier
 from model import PointHistoryClassifier
 
-import requests
+import socket
 import json
 import threading
+import time
 
 recognition_result = ""
 stop_flag = False
 lock = threading.Lock()
 
+
 def send_data():
     global recognition_result
+    s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+    s.connect(('192.168.3.100', 41234))
+    time.sleep(1)
+    with open('template.json','r') as f:
+        template_data = json.load(f)
+        # print(json.dumps(template_data).encode("utf-8"))
+        s.sendall(json.dumps(template_data).encode("utf-8"))
     
-    url = "http://127.0.0.1:5000/upload"
-
+    with open('template2.json', 'r') as file:
+        template_data = json.load(file)
     while True:
         if stop_flag:
             break
-        with open('template.json', 'r') as file:
-            template_data = json.load(file)
-            lock.acquire()
-            template_data["hand"] = recognition_result
-            lock.release()
 
         try:
-            requests.post(url=url, json=template_data)
+            lock.acquire()
+            template_data["data"] = recognition_result
+            lock.release()
+            time.sleep(0.2)
+            # print(json.dumps(template_data).encode("utf-8"))
+            s.sendall(json.dumps(template_data).encode("utf-8"))
         except Exception as e:
             print(e)
 
@@ -127,7 +136,7 @@ def main():
 
     #  ########################################################################
     mode = 0
-    
+
     send_data_t = threading.Thread(target=send_data)
     send_data_t.start()
 
@@ -159,9 +168,10 @@ def main():
             for hand_landmarks, handedness in zip(results.multi_hand_landmarks,
                                                   results.multi_handedness):
                 # 外接矩形の計算
-                brect = calc_bounding_rect(debug_image, hand_landmarks) #边框坐标
+                brect = calc_bounding_rect(debug_image, hand_landmarks)  # 边框坐标
                 # ランドマークの計算
-                landmark_list = calc_landmark_list(debug_image, hand_landmarks) #手指关键点坐标
+                landmark_list = calc_landmark_list(
+                    debug_image, hand_landmarks)  # 手指关键点坐标
                 # 相対座標・正規化座標への変換
                 pre_processed_landmark_list = pre_process_landmark(
                     landmark_list)
@@ -217,8 +227,7 @@ def main():
     cv.destroyAllWindows()
     global stop_flag
     stop_flag = True
-    send_data_t.join() #没有join整个进程无法使用ctrl + c暂停，同时主线程一停止，子线程无主未停止的情况
-
+    send_data_t.join()  # 没有join整个进程无法使用ctrl + c暂停，同时主线程一停止，子线程无主未停止的情况
 
 
 def select_mode(key, mode):
