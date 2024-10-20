@@ -19,10 +19,12 @@ import socket
 import json
 import threading
 import time
+import requests
 
 recognition_result = ""
 stop_flag = False
 condition = threading.Condition()
+temp_url = "http://192.168.3.173/set?val="
 
 
 def send_data():
@@ -44,6 +46,11 @@ def send_data():
             with condition:
                 condition.wait()
                 template_data["data"] = recognition_result
+                if template_data["data"] == "Open":
+                    temp = temp_url + str(1)
+                else:
+                    temp = temp_url + str(0)
+                requests.get(temp)
                 print(json.dumps(template_data).encode("utf-8"))
                 # s.sendall(json.dumps(template_data).encode("utf-8"))
         except Exception as e:
