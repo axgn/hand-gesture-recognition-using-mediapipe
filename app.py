@@ -22,32 +22,30 @@ import time
 
 recognition_result = ""
 stop_flag = False
-lock = threading.Lock()
+condition = threading.Condition()
 
 
 def send_data():
     global recognition_result
     s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-    s.connect(('192.168.3.100', 41234))
+    # s.connect(('192.168.3.100', 41234))
     time.sleep(1)
     with open('template.json','r') as f:
         template_data = json.load(f)
-        # print(json.dumps(template_data).encode("utf-8"))
-        s.sendall(json.dumps(template_data).encode("utf-8"))
+        print(json.dumps(template_data).encode("utf-8"))
+        # s.sendall(json.dumps(template_data).encode("utf-8"))
     
     with open('template2.json', 'r') as file:
         template_data = json.load(file)
     while True:
         if stop_flag:
             break
-
         try:
-            lock.acquire()
-            template_data["data"] = recognition_result
-            lock.release()
-            time.sleep(0.2)
-            # print(json.dumps(template_data).encode("utf-8"))
-            s.sendall(json.dumps(template_data).encode("utf-8"))
+            with condition:
+                condition.wait()
+                template_data["data"] = recognition_result
+                print(json.dumps(template_data).encode("utf-8"))
+                # s.sendall(json.dumps(template_data).encode("utf-8"))
         except Exception as e:
             print(e)
 
@@ -211,9 +209,11 @@ def main():
                     point_history_classifier_labels[most_common_fg_id[0][0]],
                 )
                 global recognition_result
-                lock.acquire()
-                recognition_result = keypoint_classifier_labels[hand_sign_id]
-                lock.release()
+                temp = keypoint_classifier_labels[hand_sign_id]
+                if temp != recognition_result:
+                    with condition:
+                        recognition_result = temp
+                        condition.notify()
         else:
             point_history.append([0, 0])
 
@@ -227,6 +227,8 @@ def main():
     cv.destroyAllWindows()
     global stop_flag
     stop_flag = True
+    with condition:
+        condition.notify_all()
     send_data_t.join()  # 没有join整个进程无法使用ctrl + c暂停，同时主线程一停止，子线程无主未停止的情况
 
 
