@@ -30,12 +30,12 @@ temp_url = "http://192.168.3.173/set?val="
 def send_data():
     global recognition_result
     s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-    # s.connect(('192.168.3.100', 41234))
+    s.connect(('192.168.3.100', 41234))
     time.sleep(1)
     with open('template.json','r') as f:
         template_data = json.load(f)
         print(json.dumps(template_data).encode("utf-8"))
-        # s.sendall(json.dumps(template_data).encode("utf-8"))
+        s.sendall(json.dumps(template_data).encode("utf-8"))
     
     with open('template2.json', 'r') as file:
         template_data = json.load(file)
@@ -46,13 +46,13 @@ def send_data():
             with condition:
                 condition.wait()
                 template_data["data"] = recognition_result
-                if template_data["data"] == "Open":
-                    temp = temp_url + str(1)
-                else:
-                    temp = temp_url + str(0)
-                requests.get(temp)
+                # if template_data["data"] == "Open":
+                #     temp = temp_url + str(1)
+                # else:
+                #     temp = temp_url + str(0)
+                # requests.get(temp)
                 print(json.dumps(template_data).encode("utf-8"))
-                # s.sendall(json.dumps(template_data).encode("utf-8"))
+                s.sendall(json.dumps(template_data).encode("utf-8"))
         except Exception as e:
             print(e)
 
