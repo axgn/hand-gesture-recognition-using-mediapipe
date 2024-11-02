@@ -30,7 +30,7 @@ temp_url = "http://192.168.3.173/set?val="
 def send_data():
     global recognition_result
     s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-    s.connect(('192.168.3.100', 41234))
+    s.connect(('192.168.3.180', 41234))
     time.sleep(1)
     with open('template.json','r') as f:
         template_data = json.load(f)
